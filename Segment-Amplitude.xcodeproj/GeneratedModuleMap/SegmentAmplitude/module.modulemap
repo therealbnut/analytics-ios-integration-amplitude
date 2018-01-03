@@ -1,0 +1,4 @@
+module SegmentAmplitude {
+    umbrella "SegmentAmplitude/include"
+    export *
+}

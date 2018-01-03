@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
   s.platform     = :ios, '7.0'
   s.requires_arc = true
 
-  s.source_files = 'Pod/Classes/**/*'
+  s.source_files = 'Sources/Segment-Amplitude/**/*'
 
   s.dependency 'Analytics', '~> 3.6' # support for iOS 7 +
   s.dependency 'Amplitude-iOS', '~> 4.0'

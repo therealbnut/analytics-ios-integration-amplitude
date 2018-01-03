@@ -1,7 +1,6 @@
 #import "SEGAmplitudeIntegration.h"
-#import <Analytics/SEGAnalyticsUtils.h>
-#import <Analytics/SEGAnalytics.h>
 
+@import Analytics;
 
 @implementation SEGAmplitudeIntegration
 
@@ -29,19 +28,19 @@
         // Call before initializing the apiKey
         if ([(NSNumber *)self.settings[@"enableLocationListening"] boolValue]) {
             [self.amplitude enableLocationListening];
-            SEGLog(@"[Ampltidue enableLocationListening]");
+            NSLog(@"[Ampltidue enableLocationListening]");
         } else {
             [self.amplitude disableLocationListening];
-            SEGLog(@"[Ampltidue disableLocationListening]");
+            NSLog(@"[Ampltidue disableLocationListening]");
         }
 
         NSString *apiKey = self.settings[@"apiKey"];
         [self.amplitude initializeApiKey:apiKey];
-        SEGLog(@"[Amplitude initializeApiKey:%@]", apiKey);
+        NSLog(@"[Amplitude initializeApiKey:%@]", apiKey);
 
         if ([(NSNumber *)self.settings[@"trackSessionEvents"] boolValue]) {
             self.amplitude.trackingSessionEvents = true;
-            SEGLog(@"[Amplitude.trackingSessionEvents = true]");
+            NSLog(@"[Amplitude.trackingSessionEvents = true]");
         }
 
         if ([(NSNumber *)self.settings[@"useAdvertisingIdForDeviceId"] boolValue]) {
@@ -85,13 +84,13 @@
 - (void)identify:(SEGIdentifyPayload *)payload
 {
     [self.amplitude setUserId:payload.userId];
-    SEGLog(@"[Amplitude setUserId:%@]", payload.userId);
+    NSLog(@"[Amplitude setUserId:%@]", payload.userId);
 
     if ([self.traitsToIncrement count] > 0 || [self.traitsToSetOnce count] > 0) {
         [self incrementOrSetTraits:payload.traits];
     } else {
         [self.amplitude setUserProperties:payload.traits];
-        SEGLog(@"[Amplitude setUserProperties:%@]", payload.traits);
+        NSLog(@"[Amplitude setUserProperties:%@]", payload.traits);
     }
 
 
@@ -100,7 +99,7 @@
     if (groups && [groups isKindOfClass:[NSDictionary class]]) {
         [groups enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL *_Nonnull stop) {
             [self.amplitude setGroup:[NSString stringWithFormat:@"%@", key] groupName:obj];
-            SEGLog(@"[Amplitude setGroup:%@ groupName:%@];", [NSString stringWithFormat:@"%@", key], obj);
+            NSLog(@"[Amplitude setGroup:%@ groupName:%@];", [NSString stringWithFormat:@"%@", key], obj);
         }];
     }
 }
@@ -117,7 +116,7 @@
     }
 
     [self.amplitude logEvent:event withEventProperties:properties withGroups:groups outOfSession:outOfSession];
-    SEGLog(@"[Amplitude logEvent:%@ withEventProperties:%@ withGroups:%@ outOfSession:true];", event, properties, groups);
+    NSLog(@"[Amplitude logEvent:%@ withEventProperties:%@ withGroups:%@ outOfSession:true];", event, properties, groups);
 
     // Track revenue. If revenue is not present fallback on total
     NSNumber *revenueOrTotal = [SEGAmplitudeIntegration extractRevenueOrTotal:properties withRevenueKey:@"revenue" andTotalKey:@"total"];
@@ -142,7 +141,7 @@
                       quantity:[quantity integerValue]
                          price:revenueOrTotal
                        receipt:receipt];
-    SEGLog(@"[Amplitude logRevenue:%@ quantity:%d price:%@ receipt:%@];", productId, [quantity integerValue], revenueOrTotal, receipt);
+    NSLog(@"[Amplitude logRevenue:%@ quantity:%d price:%@ receipt:%@];", productId, [quantity integerValue], revenueOrTotal, receipt);
 }
 
 - (void)trackLogRevenueV2:(NSDictionary *)properties andRevenueOrTotal:(NSNumber *)revenueOrTotal
@@ -150,32 +149,32 @@
     NSNumber *price = properties[@"price"] ?: revenueOrTotal;
     NSNumber *quantity = properties[@"quantity"] ?: [NSNumber numberWithInt:1];
     [[self.amprevenue setPrice:price] setQuantity:[quantity integerValue]];
-    SEGLog(@"[[AMPRevenue revenue] setPrice:%@] setQuantity: %d];", price, [quantity integerValue]);
+    NSLog(@"[[AMPRevenue revenue] setPrice:%@] setQuantity: %d];", price, [quantity integerValue]);
 
     NSString *productId = properties[@"productId"] ?: properties[@"product_id"];
     if (productId && ![productId isEqualToString:@""]) {
         [self.amprevenue setProductIdentifier:productId];
-        SEGLog(@"[[AMPRevenue revenue] setProductIdentifier:%@];", productId);
+        NSLog(@"[[AMPRevenue revenue] setProductIdentifier:%@];", productId);
     }
 
     // Amplitude throws a warning that receipt is meant to be of type NSData. Previously, Segment checked for only type NSString. For backwards capability, removed the check
     id receipt = properties[@"receipt"];
     if (receipt) {
         [self.amprevenue setReceipt:receipt];
-        SEGLog(@"[[AMPRevenue revenue] setReceipt:%@];", receipt);
+        NSLog(@"[[AMPRevenue revenue] setReceipt:%@];", receipt);
     }
 
     NSString *revenueType = properties[@"revenueType"] ?: properties[@"revenue_type"];
     if (revenueType && ![revenueType isEqualToString:@""]) {
         [self.amprevenue setRevenueType:revenueType];
-        SEGLog(@"[AMPRevenue revenue] setRevenueType:%@];", revenueType);
+        NSLog(@"[AMPRevenue revenue] setRevenueType:%@];", revenueType);
     }
 
     [self.amprevenue setEventProperties:properties];
-    SEGLog(@"[AMPRevenue revenue] setEventProperties:%@];", properties);
+    NSLog(@"[AMPRevenue revenue] setEventProperties:%@];", properties);
 
     [self.amplitude logRevenueV2:self.amprevenue];
-    SEGLog(@"[Amplitude logRevenueV2:%@];", self.amprevenue);
+    NSLog(@"[Amplitude logRevenueV2:%@];", self.amprevenue);
 }
 
 - (void)track:(SEGTrackPayload *)payload
@@ -212,22 +211,22 @@
     }
 
     [self.amplitude setGroup:groupValue groupName:groupName];
-    SEGLog(@"[Amplitude setGroup:%@ groupName:%@]", groupValue, groupName);
+    NSLog(@"[Amplitude setGroup:%@ groupName:%@]", groupValue, groupName);
 }
 
 - (void)flush
 {
     [self.amplitude uploadEvents];
-    SEGLog(@"[Amplitude uploadEvents]");
+    NSLog(@"[Amplitude uploadEvents]");
 }
 
 - (void)reset
 {
     [self.amplitude setUserId:nil];
-    SEGLog(@"[Amplitude setUserId:nil");
+    NSLog(@"[Amplitude setUserId:nil");
 
     [self.amplitude regenerateDeviceId];
-    SEGLog(@"[Amplitude regnerateDeviceId];");
+    NSLog(@"[Amplitude regnerateDeviceId];");
 }
 
 #pragma utils
@@ -238,12 +237,12 @@
         id value = [traits valueForKey:trait];
         if ([self.traitsToIncrement member:trait]) {
             [self.amplitude identify:[self.identify add:trait value:value]];
-            SEGLog(@"[Amplitude add:%@ value:%@]", trait, value);
+            NSLog(@"[Amplitude add:%@ value:%@]", trait, value);
         } else if ([self.traitsToSetOnce member:trait]) {
             [self.amplitude identify:[self.identify setOnce:trait value:value]];
         } else {
             [self.amplitude identify:[self.identify set:trait value:value]];
-            SEGLog(@"[Amplitude set:%@ value:%@]", trait, value);
+            NSLog(@"[Amplitude set:%@ value:%@]", trait, value);
         }
     }
 }
